@@ -3,21 +3,17 @@ package com.example.rickandmortyapp.presintation.detailed
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.example.rickandmortyapp.R
 import com.example.rickandmortyapp.databinding.ActivityDetailedBinding
+import com.example.rickandmortyapp.presintation.base.BaseActivity
 import com.example.rickandmortyapp.presintation.viewmodel.DetailCharacterViewModel
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import kotlin.getValue
 
-class DetailedActivity : AppCompatActivity() {
+class DetailedActivity : BaseActivity() {
     private lateinit var binding: ActivityDetailedBinding
     private val viewModel: DetailCharacterViewModel by viewModel()
 
@@ -44,43 +40,37 @@ class DetailedActivity : AppCompatActivity() {
     }
 
     private fun observeViewModel() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.characterState.collect { character ->
-                        character?.let {
-                            with(binding) {
-                                tvNameDt.text = it.name
-                                tvStatusDt.text = it.status
-                                tvSpeciesDt.text = " - ${it.species}"
-                                tvGenderDt.text = it.gender
-                                tvLocationDt.text = it.location.name
-                                tvFirstSeenDt.text = it.origin.name
-                                tvEpisodes.text = it.episode.toString()
+        viewModel.characterState.handleState(
+            onLoading = {},
+            onSuccess = {
+                setData(it)
+            }
+        )
+    }
 
-                                ivCharacterImage.load(it.image) {
-                                    crossfade(true)
-                                }
+    private fun setData(character: Character){
+        character?.let {
+            with(binding) {
+                tvNameDt.text = it.name
+                tvStatusDt.text = it.status
+                tvSpeciesDt.text = " - ${it.species}"
+                tvGenderDt.text = it.gender
+                tvLocationDt.text = it.location.name
+                tvFirstSeenDt.text = it.origin.name
+                tvEpisodes.text = it.episode.toString()
 
-                                val statusColor = when (it.status.lowercase()) {
-                                    "alive" -> R.color.green
-                                    "dead" -> R.color.red
-                                    else -> R.color.tv_gray
-                                }
-                                lifeStatusCircleDt.setColorFilter(
-                                    ContextCompat.getColor(this@DetailedActivity, statusColor)
-                                )
-                            }
-                        }
-                    }
+                ivCharacterImage.load(it.image) {
+                    crossfade(true)
                 }
-                launch {
-                    viewModel.errorState.collect { message ->
-                        message?.let {
-                            Toast.makeText(this@DetailedActivity, it, Toast.LENGTH_SHORT).show()
-                        }
-                    }
+
+                val statusColor = when (it.status.lowercase()) {
+                    "alive" -> R.color.green
+                    "dead" -> R.color.red
+                    else -> R.color.tv_gray
                 }
+                lifeStatusCircleDt.setColorFilter(
+                    ContextCompat.getColor(this@DetailedActivity, statusColor)
+                )
             }
         }
     }

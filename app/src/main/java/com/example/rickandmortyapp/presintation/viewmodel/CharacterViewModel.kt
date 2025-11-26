@@ -1,44 +1,22 @@
 package com.example.rickandmortyapp.presintation.viewmodel
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.rickandmortyapp.core.Either
+
 import com.example.rickandmortyapp.domain.usescases.GetCharacterUseCase
+import com.example.rickandmortyapp.presintation.base.BaseViewModel
+import com.example.rickandmortyapp.presintation.utils.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.launch
+
 
 class CharacterViewModel(
     private val getCharacterUseCase: GetCharacterUseCase
-): ViewModel() {
+): BaseViewModel() {
 
-    private val _characterState = MutableStateFlow<List<Character>>(emptyList())
+    private val _characterState = MutableStateFlow<UiState<List<Character>>>(UiState.Empty)
     val characterState = _characterState.asStateFlow()
 
-    private val _errorState = MutableStateFlow<String?>(null)
-    val errorState = _errorState.asStateFlow()
-
-    private val _loaderState = MutableStateFlow(false)
-    val loaderState = _loaderState.asStateFlow()
-
     fun getCharacters() {
-        viewModelScope.launch {
-            getCharacterUseCase.getCharacters()
-                .onStart { _loaderState.value = true }
-                .collect { result ->
-                    when(result) {
-                        is Either.Left -> {
-                            _errorState.value = result.value
-                            _loaderState.value = false
-                        }
+        getCharacterUseCase.getCharacters().handleFlowData(_characterState)
 
-                        is Either.Right -> {
-                            _characterState.value = result.value
-                            _loaderState.value = false
-                        }
-                    }
-                }
-        }
     }
 }

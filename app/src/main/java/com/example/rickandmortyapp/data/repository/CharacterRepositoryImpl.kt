@@ -1,6 +1,7 @@
 package com.example.rickandmortyapp.data.repository
 
 import com.example.rickandmortyapp.core.Either
+import com.example.rickandmortyapp.core.mapEither
 import com.example.rickandmortyapp.data.api.CartoonApi
 import com.example.rickandmortyapp.data.base.BaseRepository
 import com.example.rickandmortyapp.domain.repository.CharacterRepository
